@@ -7,59 +7,104 @@ const fs = require("fs");
 const OUTPUT_DIR = path.resolve(__dirname, "output");
 const outputPath = path.join(OUTPUT_DIR, "team.html");
 const render = require("./lib/htmlRenderer");
-inquirer
-     .prompt([
-         {
-             type:"input",
-             message:"Please enter your full name: ",
-             name:"name"         },
-        {
-            type:"list",
-            message:"Please choose your desired role:",
-            choices: ["Manager", "Engineer","Intern"],
-            name:"role"
-        },
-        {
-            message: "Enter ID number:",
-            name: "Identification"
-        }
-    ])
-    .then(function(res){
-        console.log(res)
-        if (res.role === "Manager") {
-            inquirer 
-                .prompt([
-                    {
-                        type: "input",
-                        message:"What is your office number?",
-                        name:"officeNumber"
-                    }
-                        ])
-        }
-        else if (res.role === "Engineer"){
-            inquirer 
-                .prompt([
-                    {
-                        type:"input",
-                        message:"Please enter your GitHub User Name: ",
-                        name:"username"
-                    }
-                ])
-        }
-        else if(res.role === "Intern"){
-            inquirer 
-                .prompt([
-                    {
-                        type:"input",
-                        message:"Please input your University: ",
-                        name:"School"
-                    }
-                ])
-        }
+const team = [];
+
+function newTeam() {
+    inquirer
+        .prompt([
+            {
+                type: "input",
+                message: "Please enter your full name: ",
+                name: "name"
+            }, {
+                type: "list",
+                message: "Please choose your desired role:",
+                choices: ["Manager", "Engineer", "Intern"],
+                name: "role"
+            }, {
+                type: "input",
+                message: "Please enter your email: ",
+                name: "email"
+            }, {
+                type: "input",
+                message: "Enter ID number:",
+                name: "id"
+            }
+        ])
+        .then(function (res) {
+            console.log(res)
+            if (res.role === "Manager") {
+                inquirer
+                    .prompt([
+                        {
+                            type: "input",
+                            message: "What is your office number?",
+                            name: "officeNumber"
+                        }
+                    ]).then(function (data) {
+                        const Management = new Manager(res.name, res.id, res.email, data.officeNumber)
+                        team.push(Management);
+                        addAnotherEmployee()
+                    })
+            }
+            else if (res.role === "Engineer") {
+                inquirer
+                    .prompt([
+                        {
+                            type: "input",
+                            message: "Please enter your GitHub User Name: ",
+                            name: "username"
+                        }
+                    ]).then(function (data) {
+                        const Engin = new Engineer(res.name, res.id, res.email, data.officeNumber)
+                        team.push(Engin);
+                        addAnotherEmployee()
+                    })
+            }
+            else if (res.role === "Intern") {
+                inquirer
+                    .prompt([
+                        {
+                            type: "input",
+                            message: "Please input your University: ",
+                            name: "School"
+                        }
+                    ]).then(function (data) {
+                        const Inte = new Intern(res.name, res.id, res.email, data.officeNumber)
+                        team.push(Inte);
+                        addAnotherEmployee()
+                    })
+            }
+        })
+}
+
+newTeam()
+
+function writeTeam() {
+    fs.writeFile("team.html", render(team), function (err) {
+        if (err) throw error
     })
-    // fs.readFile(__dirname,"simp.html",process.argv[2],function(err){
-    //     if(err) throw err
-    // })
+}
+
+function addAnotherEmployee() {
+    inquirer
+        .prompt([
+            {
+                type: "list",
+                message: "Would you like to add an additional team member?:",
+                choices: ["Yes", "No"],
+                name: "addOn"
+            }
+        ])
+        .then(function (choice) {
+            if (choice.addOn === "Yes") {
+                newTeam()
+            }
+            else {
+                writeTeam()
+            }
+        })
+}
     // Write code to use inquirer to gather information about the development team members,
 // and to create objects for each team member (using the correct classes as blueprints!)
 // After the user has input all employees desired, call the `render` function (required
